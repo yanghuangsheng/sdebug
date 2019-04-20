@@ -97,8 +97,9 @@ void xdebug_profiler_deinit(TSRMLS_D)
 {
 	function_stack_entry *fse;
 	xdebug_llist_element *le;
+	GET_CUR_XG;
 
-	for (le = XDEBUG_LLIST_TAIL(XG(stack)); le != NULL; le = XDEBUG_LLIST_PREV(le)) {
+	for (le = XDEBUG_LLIST_TAIL(CUR_XG(stack)); le != NULL; le = XDEBUG_LLIST_PREV(le)) {
 		fse = XDEBUG_LLIST_VALP(le);
 		xdebug_profiler_function_end(fse TSRMLS_CC);
 	}

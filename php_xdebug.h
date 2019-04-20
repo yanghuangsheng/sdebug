@@ -317,6 +317,21 @@ ZEND_BEGIN_MODULE_GLOBALS(xdebug)
 	xdebug_llist *filters_code_coverage;
 ZEND_END_MODULE_GLOBALS(xdebug)
 
+typedef struct _sw_zend_xdebug_globals {
+	unsigned long level;
+	xdebug_llist *stack;
+} sw_zend_xdebug_globals;
+
+HashTable sw_xdebug_globals;
+
+void sw_xdebug_init();
+long get_cid();
+int add_current_context();
+sw_zend_xdebug_globals *get_current_context();
+
+#define GET_CUR_XG sw_zend_xdebug_globals *current_xdebug_globals = get_current_context();
+#define CUR_XG(v) (current_xdebug_globals->v)
+
 #ifdef ZTS
 #define XG(v) TSRMG(xdebug_globals_id, zend_xdebug_globals *, v)
 #else

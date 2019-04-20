@@ -338,6 +338,7 @@ void xdebug_branch_info_mark_reached(char *file_name, char *function_name, zend_
 	xdebug_coverage_file *file;
 	xdebug_coverage_function *function;
 	xdebug_branch_info *branch_info;
+	GET_CUR_XG;
 
 	if (XG(previous_mark_filename) && strcmp(XG(previous_mark_filename), file_name) == 0) {
 		file = XG(previous_mark_file);
@@ -371,26 +372,26 @@ void xdebug_branch_info_mark_reached(char *file_name, char *function_name, zend_
 		void *dummy;
 
 		/* Mark out for previous branch, if one is set */
-		if (XG(branches).last_branch_nr[XG(level)] != -1) {
+		if (XG(branches).last_branch_nr[CUR_XG(level)] != -1) {
 			size_t i = 0;
 
-			for (i = 0; i < branch_info->branches[XG(branches).last_branch_nr[XG(level)]].outs_count; i++) {
-				if (branch_info->branches[XG(branches).last_branch_nr[XG(level)]].outs[i] == opcode_nr) {
-					branch_info->branches[XG(branches).last_branch_nr[XG(level)]].outs_hit[i] = 1;
+			for (i = 0; i < branch_info->branches[XG(branches).last_branch_nr[CUR_XG(level)]].outs_count; i++) {
+				if (branch_info->branches[XG(branches).last_branch_nr[CUR_XG(level)]].outs[i] == opcode_nr) {
+					branch_info->branches[XG(branches).last_branch_nr[CUR_XG(level)]].outs_hit[i] = 1;
 				}
 			}
 		}
 
-		key = xdebug_sprintf("%d:%d:%d", opcode_nr, XG(branches).last_branch_nr[XG(level)], XG(function_count));
+		key = xdebug_sprintf("%d:%d:%d", opcode_nr, XG(branches).last_branch_nr[CUR_XG(level)], XG(function_count));
 		if (!xdebug_hash_find(XG(visited_branches), key, strlen(key), (void*) &dummy)) {
-			xdebug_path_add(XG(paths_stack)->paths[XG(level)], opcode_nr);
+			xdebug_path_add(XG(paths_stack)->paths[CUR_XG(level)], opcode_nr);
 			xdebug_hash_add(XG(visited_branches), key, strlen(key), NULL);
 		}
 		xdfree(key);
 
 		branch_info->branches[opcode_nr].hit = 1;
 
-		XG(branches).last_branch_nr[XG(level)] = opcode_nr;
+		XG(branches).last_branch_nr[CUR_XG(level)] = opcode_nr;
 	}
 }
 

@@ -1058,7 +1058,7 @@ static void xdebug_declared_var_dtor(void *dummy, void *elem)
 	xdebug_str_free(s);
 }
 
-static void function_stack_entry_dtor(void *dummy, void *elem)
+void function_stack_entry_dtor(void *dummy, void *elem)
 {
 	unsigned int          i;
 	function_stack_entry *e = elem;
@@ -1617,8 +1617,9 @@ static void xdebug_throw_exception_hook(zval *exception TSRMLS_DC)
 		}
 
 		if (exception_breakpoint_found && xdebug_handle_hit_value(extra_brk_info)) {
+			GET_CUR_XG;
 			if (!XG(context).handler->remote_breakpoint(
-				&(XG(context)), XG(stack),
+				&(XG(context)), CUR_XG(stack),
 				Z_STRVAL_P(file), Z_LVAL_P(line), XDEBUG_BREAK,
 				(char*) STR_NAME_VAL(exception_ce->name),
 				code_str ? code_str : ((code && Z_TYPE_P(code) == IS_STRING) ? Z_STRVAL_P(code) : NULL),
@@ -1650,7 +1651,8 @@ static int handle_breakpoints(function_stack_entry *fse, int breakpoint_type)
 			if (!extra_brk_info->disabled && (extra_brk_info->function_break_type == breakpoint_type)) {
 				if (xdebug_handle_hit_value(extra_brk_info)) {
 					if (fse->user_defined == XDEBUG_INTERNAL || (breakpoint_type == XDEBUG_BRK_FUNC_RETURN)) {
-						if (!XG(context).handler->remote_breakpoint(&(XG(context)), XG(stack), fse->filename, fse->lineno, XDEBUG_BREAK, NULL, 0, NULL)) {
+						GET_CUR_XG;
+						if (!XG(context).handler->remote_breakpoint(&(XG(context)), CUR_XG(stack), fse->filename, fse->lineno, XDEBUG_BREAK, NULL, 0, NULL)) {
 							return 0;
 						}
 					} else {
@@ -1682,8 +1684,16 @@ static int handle_breakpoints(function_stack_entry *fse, int breakpoint_type)
 	return 1;
 }
 
+int initialized = 0;
 void xdebug_execute_ex(zend_execute_data *execute_data TSRMLS_DC)
 {
+	if (!initialized) {
+		sw_xdebug_init();
+		initialized = 1;
+	}
+	add_current_context();
+	GET_CUR_XG;
+
 	zend_op_array        *op_array = &(execute_data->func->op_array);
 	zend_execute_data    *edata = execute_data->prev_execute_data;
 	zval                 *dummy;
@@ -1727,7 +1737,7 @@ void xdebug_execute_ex(zend_execute_data *execute_data TSRMLS_DC)
 		XG(context).program_name = xdstrdup(STR_NAME_VAL(op_array->filename));
 	}
 
-	if (XG(level) == 0 && XG(in_execution)) {
+	if (CUR_XG(level) == 0 && XG(in_execution)) {
 		/* Set session cookie if requested */
 		if (
 			((
@@ -1826,8 +1836,8 @@ void xdebug_execute_ex(zend_execute_data *execute_data TSRMLS_DC)
 		}
 	}
 
-	XG(level)++;
-	if ((signed long) XG(level) > XG(max_nesting_level) && (XG(max_nesting_level) != -1)) {
+	CUR_XG(level)++;
+	if ((signed long) CUR_XG(level) > XG(max_nesting_level) && (XG(max_nesting_level) != -1)) {
 		zend_throw_exception_ex(zend_ce_error, 0, "Maximum function nesting level of '%ld' reached, aborting!", XG(max_nesting_level));
 	}
 
@@ -1858,14 +1868,14 @@ void xdebug_execute_ex(zend_execute_data *execute_data TSRMLS_DC)
 		fse->This = NULL;
 	}
 
-	if (XG(stack) && (XG(remote_enabled) || XG(collect_vars) || XG(show_local_vars))) {
+	if (CUR_XG(stack) && (XG(remote_enabled) || XG(collect_vars) || XG(show_local_vars))) {
 		/* Because include/require is treated as a stack level, we have to add used
 		 * variables in include/required files to all the stack levels above, until
 		 * we hit a function or the top level stack.  This is so that the variables
 		 * show up correctly where they should be.  We always call
 		 * add_used_variables on the current stack level, otherwise vars in include
 		 * files do not show up in the locals list.  */
-		for (le = XDEBUG_LLIST_TAIL(XG(stack)); le != NULL; le = XDEBUG_LLIST_PREV(le)) {
+		for (le = XDEBUG_LLIST_TAIL(CUR_XG(stack)); le != NULL; le = XDEBUG_LLIST_PREV(le)) {
 			xfse = XDEBUG_LLIST_VALP(le);
 			add_used_variables(xfse, op_array);
 			if (XDEBUG_IS_FUNCTION(xfse->function.type)) {
@@ -1952,10 +1962,10 @@ void xdebug_execute_ex(zend_execute_data *execute_data TSRMLS_DC)
 
 	fse->symbol_table = NULL;
 	fse->execute_data = NULL;
-	if (XG(stack)) {
-		xdebug_llist_remove(XG(stack), XDEBUG_LLIST_TAIL(XG(stack)), function_stack_entry_dtor);
+	if (CUR_XG(stack)) {
+		xdebug_llist_remove(CUR_XG(stack), XDEBUG_LLIST_TAIL(CUR_XG(stack)), function_stack_entry_dtor);
 	}
-	XG(level)--;
+	CUR_XG(level)--;
 }
 
 static int check_soap_call(function_stack_entry *fse)
@@ -1974,6 +1984,14 @@ static int check_soap_call(function_stack_entry *fse)
 
 void xdebug_execute_internal(zend_execute_data *current_execute_data, zval *return_value)
 {
+	if (xdebug_old_execute_internal) {
+		xdebug_old_execute_internal(current_execute_data, return_value TSRMLS_CC);
+	}
+	else {
+		execute_internal(current_execute_data, return_value TSRMLS_CC);
+	}
+	return;
+	GET_CUR_XG;
 	zend_execute_data    *edata = EG(current_execute_data);
 	function_stack_entry *fse;
 	int                   do_return = (XG(do_trace) && XG(trace_context));
@@ -1982,8 +2000,8 @@ void xdebug_execute_internal(zend_execute_data *current_execute_data, zval *retu
 	int                   restore_error_handler_situation = 0;
 	void                (*tmp_error_cb)(int type, const char *error_filename, const uint error_lineno, const char *format, va_list args) = NULL;
 
-	XG(level)++;
-	if ((signed long) XG(level) > XG(max_nesting_level) && (XG(max_nesting_level) != -1)) {
+	CUR_XG(level)++;
+	if ((signed long) CUR_XG(level) > XG(max_nesting_level) && (XG(max_nesting_level) != -1)) {
 		zend_throw_exception_ex(zend_ce_error, 0, "Maximum function nesting level of '%ld' reached, aborting!", XG(max_nesting_level));
 	}
 
@@ -2047,10 +2065,10 @@ void xdebug_execute_internal(zend_execute_data *current_execute_data, zval *retu
 		}
 	}
 
-	if (XG(stack)) {
-		xdebug_llist_remove(XG(stack), XDEBUG_LLIST_TAIL(XG(stack)), function_stack_entry_dtor);
+	if (CUR_XG(stack)) {
+		xdebug_llist_remove(CUR_XG(stack), XDEBUG_LLIST_TAIL(CUR_XG(stack)), function_stack_entry_dtor);
 	}
-	XG(level)--;
+	CUR_XG(level)--;
 }
 
 /* Opcode handler for exit, to be able to clean up the profiler */
@@ -2506,19 +2524,20 @@ ZEND_DLEXPORT void xdebug_statement_call(zend_op_array *op_array)
 	}
 
 	if (XG(remote_enabled)) {
+		GET_CUR_XG;
 
 		if (XG(context).do_break) {
 			XG(context).do_break = 0;
 
-			if (!XG(context).handler->remote_breakpoint(&(XG(context)), XG(stack), file, lineno, XDEBUG_BREAK, NULL, 0, NULL)) {
+			if (!XG(context).handler->remote_breakpoint(&(XG(context)), CUR_XG(stack), file, lineno, XDEBUG_BREAK, NULL, 0, NULL)) {
 				XG(remote_enabled) = 0;
 				return;
 			}
 		}
 
 		/* Get latest stack level and function number */
-		if (XG(stack)) {
-			le = XDEBUG_LLIST_TAIL(XG(stack));
+		if (CUR_XG(stack)) {
+			le = XDEBUG_LLIST_TAIL(CUR_XG(stack));
 			fse = XDEBUG_LLIST_VALP(le);
 			level = fse->level;
 			func_nr = fse->function_nr;
@@ -2537,7 +2556,7 @@ ZEND_DLEXPORT void xdebug_statement_call(zend_op_array *op_array)
 		) {
 			XG(context).do_finish = 0;
 
-			if (!XG(context).handler->remote_breakpoint(&(XG(context)), XG(stack), file, lineno, XDEBUG_STEP, NULL, 0, NULL)) {
+			if (!XG(context).handler->remote_breakpoint(&(XG(context)), CUR_XG(stack), file, lineno, XDEBUG_STEP, NULL, 0, NULL)) {
 				XG(remote_enabled) = 0;
 				return;
 			}
@@ -2548,7 +2567,7 @@ ZEND_DLEXPORT void xdebug_statement_call(zend_op_array *op_array)
 		if (XG(context).do_next && XG(context).next_level >= level) {
 			XG(context).do_next = 0;
 
-			if (!XG(context).handler->remote_breakpoint(&(XG(context)), XG(stack), file, lineno, XDEBUG_STEP, NULL, 0, NULL)) {
+			if (!XG(context).handler->remote_breakpoint(&(XG(context)), CUR_XG(stack), file, lineno, XDEBUG_STEP, NULL, 0, NULL)) {
 				XG(remote_enabled) = 0;
 				return;
 			}
@@ -2559,7 +2578,7 @@ ZEND_DLEXPORT void xdebug_statement_call(zend_op_array *op_array)
 		if (XG(context).do_step) {
 			XG(context).do_step = 0;
 
-			if (!XG(context).handler->remote_breakpoint(&(XG(context)), XG(stack), file, lineno, XDEBUG_STEP, NULL, 0, NULL)) {
+			if (!XG(context).handler->remote_breakpoint(&(XG(context)), CUR_XG(stack), file, lineno, XDEBUG_STEP, NULL, 0, NULL)) {
 				XG(remote_enabled) = 0;
 				return;
 			}
@@ -2605,7 +2624,7 @@ ZEND_DLEXPORT void xdebug_statement_call(zend_op_array *op_array)
 						XG(context).inhibit_notifications = 0;
 					}
 					if (break_ok && xdebug_handle_hit_value(extra_brk_info)) {
-						if (!XG(context).handler->remote_breakpoint(&(XG(context)), XG(stack), file, lineno, XDEBUG_BREAK, NULL, 0, NULL)) {
+						if (!XG(context).handler->remote_breakpoint(&(XG(context)), CUR_XG(stack), file, lineno, XDEBUG_BREAK, NULL, 0, NULL)) {
 							XG(remote_enabled) = 0;
 							break;
 						}
