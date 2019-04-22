@@ -315,11 +315,15 @@ ZEND_BEGIN_MODULE_GLOBALS(xdebug)
 	zend_long     filter_type_code_coverage;
 	xdebug_llist *filters_tracing;
 	xdebug_llist *filters_code_coverage;
+
+	zend_bool     in_getcid;
 ZEND_END_MODULE_GLOBALS(xdebug)
 
 typedef struct _sw_zend_xdebug_globals {
+	long          cid;
+
 	unsigned long level;
-	xdebug_llist *stack;
+	xdebug_llist  *stack;
 } sw_zend_xdebug_globals;
 
 HashTable sw_xdebug_globals;
@@ -328,6 +332,7 @@ void sw_xdebug_init();
 long get_cid();
 int add_current_context();
 sw_zend_xdebug_globals *get_current_context();
+void remove_context(long cid);
 
 #define GET_CUR_XG sw_zend_xdebug_globals *current_xdebug_globals = get_current_context();
 #define CUR_XG(v) (current_xdebug_globals->v)

@@ -1687,11 +1687,15 @@ static int handle_breakpoints(function_stack_entry *fse, int breakpoint_type)
 int initialized = 0;
 void xdebug_execute_ex(zend_execute_data *execute_data TSRMLS_DC)
 {
+    int do_remove_context = 0;
+
 	if (!initialized) {
 		sw_xdebug_init();
 		initialized = 1;
 	}
-	add_current_context();
+	if (add_current_context()) {
+	    do_remove_context = 1;
+	}
 	GET_CUR_XG;
 
 	zend_op_array        *op_array = &(execute_data->func->op_array);
@@ -1966,6 +1970,9 @@ void xdebug_execute_ex(zend_execute_data *execute_data TSRMLS_DC)
 		xdebug_llist_remove(CUR_XG(stack), XDEBUG_LLIST_TAIL(CUR_XG(stack)), function_stack_entry_dtor);
 	}
 	CUR_XG(level)--;
+	if (do_remove_context) {
+	    remove_context(CUR_XG(cid));
+	}
 }
 
 static int check_soap_call(function_stack_entry *fse)
@@ -1984,13 +1991,21 @@ static int check_soap_call(function_stack_entry *fse)
 
 void xdebug_execute_internal(zend_execute_data *current_execute_data, zval *return_value)
 {
-	if (xdebug_old_execute_internal) {
-		xdebug_old_execute_internal(current_execute_data, return_value TSRMLS_CC);
+	if(XG(in_getcid)) {
+		XG(in_getcid) = 0;
+		if (xdebug_old_execute_internal) {
+			xdebug_old_execute_internal(current_execute_data, return_value TSRMLS_CC);
+		}
+		else {
+			execute_internal(current_execute_data, return_value TSRMLS_CC);
+		}
+		return;
 	}
-	else {
-		execute_internal(current_execute_data, return_value TSRMLS_CC);
+
+    int do_remove_context = 0;
+	if (add_current_context()) {
+	    do_remove_context = 1;
 	}
-	return;
 	GET_CUR_XG;
 	zend_execute_data    *edata = EG(current_execute_data);
 	function_stack_entry *fse;
@@ -2069,6 +2084,9 @@ void xdebug_execute_internal(zend_execute_data *current_execute_data, zval *retu
 		xdebug_llist_remove(CUR_XG(stack), XDEBUG_LLIST_TAIL(CUR_XG(stack)), function_stack_entry_dtor);
 	}
 	CUR_XG(level)--;
+	if (do_remove_context) {
+        remove_context(CUR_XG(cid));
+    }
 }
 
 /* Opcode handler for exit, to be able to clean up the profiler */

@@ -1,5 +1,6 @@
 #include "php_xdebug.h"
 
+ZEND_DECLARE_MODULE_GLOBALS(xdebug);
 void function_stack_entry_dtor(void *dummy, void *elem);
 
 zend_fcall_info_cache fci_cache;
@@ -30,7 +31,7 @@ long get_cid()
 	fci.params = NULL;
 	fci.no_separation = 0;
 
-
+	XG(in_getcid) = 1;
 	zend_call_function(&fci, &fci_cache);
 
 	return zval_get_long(&retval) == -1 ? 0 : zval_get_long(&retval);
@@ -47,6 +48,7 @@ int add_current_context()
 	}
 
 	new_context = emalloc(sizeof(sw_zend_xdebug_globals));
+	new_context->cid   = cid;
 	new_context->level = 0;
 	new_context->stack = xdebug_llist_alloc(function_stack_entry_dtor);
 	ZVAL_PTR(&pData, new_context);
@@ -59,4 +61,17 @@ sw_zend_xdebug_globals *get_current_context()
 {
 	zval *val = zend_hash_index_find(&sw_xdebug_globals, get_cid());
 	return (sw_zend_xdebug_globals *)Z_PTR_P(val);
+}
+
+void remove_context(long cid)
+{
+    sw_zend_xdebug_globals *context;
+    zval *pData = zend_hash_index_find(&sw_xdebug_globals, cid);
+
+    context = (sw_zend_xdebug_globals *)Z_PTR_P(pData);
+    xdebug_llist_destroy(context->stack, NULL);
+    context->level = 0;
+    context->stack = NULL;
+//    efree(context);
+//    zend_hash_index_del(&sw_xdebug_globals, cid);
 }
