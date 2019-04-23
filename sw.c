@@ -72,6 +72,6 @@ void remove_context(long cid)
     xdebug_llist_destroy(context->stack, NULL);
     context->level = 0;
     context->stack = NULL;
-//    efree(context);
-//    zend_hash_index_del(&sw_xdebug_globals, cid);
+    efree(context);
+    zend_hash_index_del(&sw_xdebug_globals, cid);
 }
