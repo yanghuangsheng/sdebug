@@ -51,6 +51,7 @@ int add_current_context()
 	new_context->cid   = cid;
 	new_context->level = 0;
 	new_context->stack = xdebug_llist_alloc(function_stack_entry_dtor);
+	new_context->prev_memory = 0;
 	ZVAL_PTR(&pData, new_context);
 	zend_hash_index_add(&sw_xdebug_globals, cid, &pData);
 

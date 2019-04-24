@@ -1240,9 +1240,9 @@ function_stack_entry *xdebug_add_stack_frame(zend_execute_data *zdata, zend_op_a
 	if (!tmp->filename) {
 		tmp->filename = xdstrdup("UNKNOWN?");
 	}
-	tmp->prev_memory = XG(prev_memory);
+	tmp->prev_memory = CUR_XG(prev_memory);
 	tmp->memory = zend_memory_usage(0 TSRMLS_CC);
-	XG(prev_memory) = tmp->memory;
+	CUR_XG(prev_memory) = tmp->memory;
 	tmp->time   = xdebug_get_utime();
 	tmp->lineno = 0;
 	tmp->prev   = 0;

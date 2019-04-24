@@ -324,6 +324,8 @@ typedef struct _sw_zend_xdebug_globals {
 
 	unsigned long level;
 	xdebug_llist  *stack;
+
+	signed long  prev_memory;
 } sw_zend_xdebug_globals;
 
 HashTable sw_xdebug_globals;
