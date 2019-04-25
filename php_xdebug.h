@@ -315,8 +315,6 @@ ZEND_BEGIN_MODULE_GLOBALS(xdebug)
 	zend_long     filter_type_code_coverage;
 	xdebug_llist *filters_tracing;
 	xdebug_llist *filters_code_coverage;
-
-	zend_bool     in_getcid;
 ZEND_END_MODULE_GLOBALS(xdebug)
 
 typedef struct _sw_zend_xdebug_globals {

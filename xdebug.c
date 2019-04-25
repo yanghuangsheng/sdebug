@@ -1687,14 +1687,14 @@ static int handle_breakpoints(function_stack_entry *fse, int breakpoint_type)
 int initialized = 0;
 void xdebug_execute_ex(zend_execute_data *execute_data TSRMLS_DC)
 {
-    int do_remove_context = 0;
+	int do_remove_context = 0;
 
 	if (!initialized) {
 		sw_xdebug_init();
 		initialized = 1;
 	}
 	if (add_current_context()) {
-	    do_remove_context = 1;
+		do_remove_context = 1;
 	}
 	GET_CUR_XG;
 
@@ -1971,11 +1971,11 @@ void xdebug_execute_ex(zend_execute_data *execute_data TSRMLS_DC)
 	}
 	CUR_XG(level)--;
 	if (do_remove_context) {
-        if (UNEXPECTED(EG(exception))) {
-            return;
-        } else {
-	        remove_context(CUR_XG(cid));
-        }
+		if (UNEXPECTED(EG(exception))) {
+			return;
+		} else {
+			remove_context(CUR_XG(cid));
+		}
 	}
 }
 
@@ -1995,20 +1995,9 @@ static int check_soap_call(function_stack_entry *fse)
 
 void xdebug_execute_internal(zend_execute_data *current_execute_data, zval *return_value)
 {
-	if(XG(in_getcid)) {
-		XG(in_getcid) = 0;
-		if (xdebug_old_execute_internal) {
-			xdebug_old_execute_internal(current_execute_data, return_value TSRMLS_CC);
-		}
-		else {
-			execute_internal(current_execute_data, return_value TSRMLS_CC);
-		}
-		return;
-	}
-
-    int do_remove_context = 0;
+	int do_remove_context = 0;
 	if (add_current_context()) {
-	    do_remove_context = 1;
+		do_remove_context = 1;
 	}
 	GET_CUR_XG;
 	zend_execute_data    *edata = EG(current_execute_data);
@@ -2089,8 +2078,8 @@ void xdebug_execute_internal(zend_execute_data *current_execute_data, zval *retu
 	}
 	CUR_XG(level)--;
 	if (do_remove_context) {
-        remove_context(CUR_XG(cid));
-    }
+		remove_context(CUR_XG(cid));
+	}
 }
 
 /* Opcode handler for exit, to be able to clean up the profiler */
