@@ -1306,6 +1306,8 @@ PHP_RINIT_FUNCTION(xdebug)
 	XG(filters_tracing)           = xdebug_llist_alloc(xdebug_llist_string_dtor);
 	XG(filters_code_coverage)     = xdebug_llist_alloc(xdebug_llist_string_dtor);
 
+	sw_xdebug_init();
+
 	return SUCCESS;
 }
 
@@ -1684,15 +1686,10 @@ static int handle_breakpoints(function_stack_entry *fse, int breakpoint_type)
 	return 1;
 }
 
-int initialized = 0;
 void xdebug_execute_ex(zend_execute_data *execute_data TSRMLS_DC)
 {
 	int do_remove_context = 0;
 
-	if (!initialized) {
-		sw_xdebug_init();
-		initialized = 1;
-	}
 	if (add_current_context()) {
 		do_remove_context = 1;
 	}

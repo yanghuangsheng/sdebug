@@ -2,21 +2,26 @@
 
 void function_stack_entry_dtor(void *dummy, void *elem);
 
-zend_function *get_cid_function;
+zend_function *get_cid_function = NULL;
 
 void sw_xdebug_init()
 {
 	zend_hash_init(&sw_xdebug_globals, 32, NULL, ZVAL_PTR_DTOR, 0);
 
-	zend_string *classname = zend_string_init(ZEND_STRL("Swoole\\Coroutine"), 0);
-	zend_class_entry *class_handle = zend_lookup_class(classname);
-	zend_string_release(classname);
+	if (zend_hash_str_find_ptr(&module_registry, ZEND_STRL("swoole"))) {
+		zend_string      *classname    = zend_string_init(ZEND_STRL("Swoole\\Coroutine"), 0);
+		zend_class_entry *class_handle = zend_lookup_class(classname);
+		zend_string_release(classname);
 
-	get_cid_function = (zend_function *)zend_hash_str_find_ptr(&(class_handle->function_table), ZEND_STRL("getcid"));
+		get_cid_function = (zend_function *)zend_hash_str_find_ptr(&(class_handle->function_table), ZEND_STRL("getcid"));
+	}
 }
 
 long get_cid()
 {
+	if (UNEXPECTED(!get_cid_function)) {
+		return 0;
+	}
 	zend_fcall_info fci;
 	zval            retval;
 
@@ -50,6 +55,7 @@ int add_current_context()
 sw_zend_xdebug_globals *get_current_context()
 {
 	zval *val = zend_hash_index_find(&sw_xdebug_globals, get_cid());
+
 	return (sw_zend_xdebug_globals *)Z_PTR_P(val);
 }
 
