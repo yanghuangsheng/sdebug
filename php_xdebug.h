@@ -323,7 +323,13 @@ typedef struct _sw_zend_xdebug_globals {
 	unsigned long level;
 	xdebug_llist  *stack;
 
-	signed long  prev_memory;
+	signed long   prev_memory;
+
+	xdebug_path_info     *paths_stack;
+	struct {
+        unsigned int  size;
+        int *last_branch_nr;
+    } branches;
 } sw_zend_xdebug_globals;
 
 HashTable sw_xdebug_globals;

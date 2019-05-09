@@ -7,6 +7,7 @@ zend_function *get_cid_function = NULL;
 void sw_xdebug_init()
 {
 	zend_hash_init(&sw_xdebug_globals, 32, NULL, ZVAL_PTR_DTOR, 0);
+	add_current_context();
 
 	if (zend_hash_str_find_ptr(&module_registry, ZEND_STRL("swoole"))) {
 		zend_string      *classname    = zend_string_init(ZEND_STRL("Swoole\\Coroutine"), 0);
@@ -40,11 +41,14 @@ int add_current_context()
 		return 0;
 	}
 
-	new_context        = emalloc(sizeof(sw_zend_xdebug_globals));
-	new_context->cid   = cid;
-	new_context->level = 0;
-	new_context->stack = xdebug_llist_alloc(function_stack_entry_dtor);
-	new_context->prev_memory = 0;
+	new_context                = emalloc(sizeof(sw_zend_xdebug_globals));
+	new_context->cid           = cid;
+	new_context->level         = 0;
+	new_context->stack         = xdebug_llist_alloc(function_stack_entry_dtor);
+	new_context->prev_memory   = 0;
+	new_context->paths_stack   = xdebug_path_info_ctor();
+	new_context->branches.size = 0;
+	new_context->branches.last_branch_nr = NULL;
 
 	ZVAL_PTR(&pData, new_context);
 	zend_hash_index_add(&sw_xdebug_globals, cid, &pData);
@@ -67,8 +71,14 @@ void remove_context(long cid)
 	context = (sw_zend_xdebug_globals *)Z_PTR_P(pData);
 
 	xdebug_llist_destroy(context->stack, NULL);
-	context->level = 0;
-	context->stack = NULL;
+
+	if (context->paths_stack) {
+		xdebug_path_info_dtor(context->paths_stack);
+	}
+	if (context->branches.last_branch_nr) {
+		free(context->branches.last_branch_nr);
+	}
+
 	efree(context);
 
 	zend_hash_index_del(&sw_xdebug_globals, cid);

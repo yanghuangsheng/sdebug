@@ -919,21 +919,21 @@ void xdebug_code_coverage_start_of_function(zend_op_array *op_array, char *funct
 	GET_CUR_XG;
 
 	xdebug_prefill_code_coverage(op_array TSRMLS_CC);
-	xdebug_path_info_add_path_for_level(XG(paths_stack), path, CUR_XG(level) TSRMLS_CC);
+	xdebug_path_info_add_path_for_level(CUR_XG(paths_stack), path, CUR_XG(level) TSRMLS_CC);
 
-	if (XG(branches).size == 0 || CUR_XG(level) >= XG(branches).size) {
-		XG(branches).size = CUR_XG(level) + 32;
-		XG(branches).last_branch_nr = realloc(XG(branches).last_branch_nr, sizeof(int) * XG(branches.size));
+	if (CUR_XG(branches).size == 0 || CUR_XG(level) >= CUR_XG(branches).size) {
+		CUR_XG(branches).size = CUR_XG(level) + 32;
+		CUR_XG(branches).last_branch_nr = realloc(CUR_XG(branches).last_branch_nr, sizeof(int) * XG(branches.size));
 	}
 
-	XG(branches).last_branch_nr[CUR_XG(level)] = -1;
+	CUR_XG(branches).last_branch_nr[CUR_XG(level)] = -1;
 }
 
 void xdebug_code_coverage_end_of_function(zend_op_array *op_array, char *file_name, char *function_name TSRMLS_DC)
 {
 	GET_CUR_XG;
 	xdebug_str str = XDEBUG_STR_INITIALIZER;
-	xdebug_path *path = xdebug_path_info_get_path_for_level(XG(paths_stack), CUR_XG(level) TSRMLS_CC);
+	xdebug_path *path = xdebug_path_info_get_path_for_level(CUR_XG(paths_stack), CUR_XG(level) TSRMLS_CC);
 
 	if (!path) {
 		return;
@@ -976,6 +976,7 @@ PHP_FUNCTION(xdebug_start_code_coverage)
 PHP_FUNCTION(xdebug_stop_code_coverage)
 {
 	zend_long cleanup = 1;
+	GET_CUR_XG;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &cleanup) == FAILURE) {
 		return;
@@ -989,8 +990,8 @@ PHP_FUNCTION(xdebug_stop_code_coverage)
 			xdebug_hash_destroy(XG(code_coverage));
 			XG(code_coverage) = xdebug_hash_alloc(32, xdebug_coverage_file_dtor);
 			XG(dead_code_last_start_id)++;
-			xdebug_path_info_dtor(XG(paths_stack));
-			XG(paths_stack) = xdebug_path_info_ctor();
+			xdebug_path_info_dtor(CUR_XG(paths_stack));
+			CUR_XG(paths_stack) = xdebug_path_info_ctor();
 		}
 		XG(do_code_coverage) = 0;
 		RETURN_TRUE;

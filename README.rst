@@ -1,4 +1,4 @@
-改造进度: 目前单步调试可用
+改造进度: 目前Remote Debugging,code coverage,profiler可用
 ======
 Xdebug
 ======
