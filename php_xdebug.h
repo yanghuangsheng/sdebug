@@ -333,6 +333,7 @@ typedef struct _sw_zend_xdebug_globals {
 } sw_zend_xdebug_globals;
 
 HashTable sw_xdebug_globals;
+user_opcode_handler_t sw_ori_exit_handler;
 
 void sw_xdebug_init();
 long get_cid();

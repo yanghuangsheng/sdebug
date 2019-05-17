@@ -764,6 +764,7 @@ PHP_MINIT_FUNCTION(xdebug)
 	zend_xdebug_filter_offset = zend_get_resource_handle(&dummy_ext);
 
 	/* Overload the "exit" opcode */
+	sw_ori_exit_handler = zend_get_user_opcode_handler(ZEND_EXIT);
 	XDEBUG_SET_OPCODE_OVERRIDE_ASSIGN(exit, ZEND_EXIT);
 
 	/* Overload opcodes for code coverage */
@@ -2082,6 +2083,9 @@ void xdebug_execute_internal(zend_execute_data *current_execute_data, zval *retu
 /* Opcode handler for exit, to be able to clean up the profiler */
 int xdebug_exit_handler(zend_execute_data *execute_data)
 {
+	if (sw_ori_exit_handler) {
+		sw_ori_exit_handler(execute_data);
+	}
 	if (XG(profiler_enabled)) {
 		xdebug_profiler_deinit(TSRMLS_C);
 	}
