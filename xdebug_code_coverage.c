@@ -923,7 +923,7 @@ void xdebug_code_coverage_start_of_function(zend_op_array *op_array, char *funct
 
 	if (CUR_XG(branches).size == 0 || CUR_XG(level) >= CUR_XG(branches).size) {
 		CUR_XG(branches).size = CUR_XG(level) + 32;
-		CUR_XG(branches).last_branch_nr = realloc(CUR_XG(branches).last_branch_nr, sizeof(int) * XG(branches.size));
+		CUR_XG(branches).last_branch_nr = realloc(CUR_XG(branches).last_branch_nr, sizeof(int) * CUR_XG(branches).size);
 	}
 
 	CUR_XG(branches).last_branch_nr[CUR_XG(level)] = -1;
