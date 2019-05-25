@@ -1,6 +1,6 @@
 进度
 ------------
-1. 目前修改的差不多了(抛异常时会一次内存没释放)
+1. 目前修改基本完毕了
 2. 由于swoole里有对是否安装xdebug进行检测,所以这里注册到php里的扩展名称并不是xdebug,而是xdebug_test,但是phpunit代码覆盖率组件里又有检查是否安装xdebug >_<,所以目前想用code_coverage的解决方法是手动修改phpunit检查xdebug的地方为xdebug_test
 
 ======
