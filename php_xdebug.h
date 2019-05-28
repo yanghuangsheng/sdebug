@@ -19,7 +19,7 @@
 #ifndef PHP_XDEBUG_H
 #define PHP_XDEBUG_H
 
-#define XDEBUG_NAME       "Xdebug"
+#define XDEBUG_NAME       "Sdebug"
 #define XDEBUG_VERSION    "2.6.1-dev"
 #define XDEBUG_AUTHOR     "Derick Rethans"
 #define XDEBUG_COPYRIGHT  "Copyright (c) 2002-2018 by Derick Rethans"

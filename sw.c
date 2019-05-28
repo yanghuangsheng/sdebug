@@ -1,11 +1,14 @@
 #include "php_xdebug.h"
 
 void function_stack_entry_dtor(void *dummy, void *elem);
+ZEND_FUNCTION(xdebug_extension_loaded);
 
-zend_function *get_cid_function = NULL;
+static zend_function *get_cid_function = NULL;
 
 void sw_xdebug_init()
 {
+	zend_function *orig_extension_loaded;
+
 	zend_hash_init(&sw_xdebug_globals, 32, NULL, ZVAL_PTR_DTOR, 0);
 	add_current_context();
 
@@ -14,17 +17,20 @@ void sw_xdebug_init()
 		zend_class_entry *class_handle = zend_lookup_class(classname);
 		zend_string_release(classname);
 
-		get_cid_function = (zend_function *)zend_hash_str_find_ptr(&(class_handle->function_table), ZEND_STRL("getcid"));
+		get_cid_function = zend_hash_str_find_ptr(&(class_handle->function_table), ZEND_STRL("getcid"));
 	}
+
+	orig_extension_loaded = zend_hash_str_find_ptr(EG(function_table), ZEND_STRL("extension_loaded"));
+	orig_extension_loaded->internal_function.handler = zif_xdebug_extension_loaded;
 }
 
 long get_cid()
 {
+	zval retval;
+
 	if (UNEXPECTED(!get_cid_function)) {
 		return 0;
 	}
-	zend_fcall_info fci;
-	zval            retval;
 
 	get_cid_function->internal_function.handler(NULL, &retval);
 
@@ -82,4 +88,28 @@ void remove_context(long cid)
 	efree(context);
 
 	zend_hash_index_del(&sw_xdebug_globals, cid);
+}
+
+ZEND_FUNCTION(xdebug_extension_loaded)
+{
+	zend_string *extension_name;
+	zend_string *lcname;
+	zend_string *xdebug_name = zend_string_init(ZEND_STRL("xdebug"), 0);
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "S", &extension_name) == FAILURE) {
+		return;
+	}
+
+	lcname = zend_string_tolower(extension_name);
+	if (zend_hash_exists(&module_registry, lcname)) {
+		RETVAL_TRUE;
+	} else {
+		if (zend_string_equals(lcname, xdebug_name)) {
+			RETVAL_TRUE;
+		} else {
+			RETVAL_FALSE;
+		}
+	}
+	zend_string_release(lcname);
+	zend_string_release(xdebug_name);
 }

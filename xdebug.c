@@ -235,7 +235,7 @@ zend_function_entry xdebug_functions[] = {
 
 zend_module_entry xdebug_module_entry = {
 	STANDARD_MODULE_HEADER,
-	"xdebug_test",
+	"sdebug",
 	xdebug_functions,
 	PHP_MINIT(xdebug),
 	PHP_MSHUTDOWN(xdebug),
