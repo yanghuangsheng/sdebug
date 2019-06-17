@@ -9,7 +9,6 @@ void sw_xdebug_init()
 {
 	zend_function *orig_extension_loaded;
 
-	zend_hash_init(&sw_xdebug_globals, 32, NULL, ZVAL_PTR_DTOR, 0);
 	add_current_context();
 
 	if (zend_hash_str_find_ptr(&module_registry, ZEND_STRL("swoole"))) {

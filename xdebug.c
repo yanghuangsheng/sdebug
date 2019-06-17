@@ -2680,6 +2680,7 @@ ZEND_DLEXPORT int xdebug_zend_startup(zend_extension *extension)
 	xdebug_hook_output_handlers();
 
 	zend_xdebug_initialised = 1;
+	zend_hash_init(&sw_xdebug_globals, 32, NULL, ZVAL_PTR_DTOR, 0);
 
 	return zend_startup_module(&xdebug_module_entry);
 }
