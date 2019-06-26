@@ -250,6 +250,9 @@ zend_module_entry xdebug_module_entry = {
 
 ZEND_DECLARE_MODULE_GLOBALS(xdebug)
 
+HashTable sw_xdebug_globals;
+static user_opcode_handler_t sw_ori_exit_handler;
+
 #if COMPILE_DL_XDEBUG
 ZEND_GET_MODULE(xdebug)
 # ifdef ZTS

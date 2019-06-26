@@ -708,6 +708,8 @@ void xdebug_error_cb(int type, const char *error_filename, const uint error_line
 	error_handling_t  error_handling;
 	zend_class_entry *exception_class;
 
+	add_current_context();
+
 	TSRMLS_FETCH();
 
 	buffer_len = vspprintf(&buffer, PG(log_errors_max_len), format, args);

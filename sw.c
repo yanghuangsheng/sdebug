@@ -3,13 +3,12 @@
 void function_stack_entry_dtor(void *dummy, void *elem);
 ZEND_FUNCTION(xdebug_extension_loaded);
 
+extern HashTable sw_xdebug_globals;
 static zend_function *get_cid_function = NULL;
 
 void sw_xdebug_init()
 {
 	zend_function *orig_extension_loaded;
-
-	add_current_context();
 
 	if (zend_hash_str_find_ptr(&module_registry, ZEND_STRL("swoole"))) {
 		zend_string      *classname    = zend_string_init(ZEND_STRL("Swoole\\Coroutine"), 0);
