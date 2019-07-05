@@ -1972,11 +1972,7 @@ void xdebug_execute_ex(zend_execute_data *execute_data TSRMLS_DC)
 	}
 	CUR_XG(level)--;
 	if (do_remove_context) {
-		if (UNEXPECTED(EG(exception))) {
-			return;
-		} else {
-			remove_context(CUR_XG(cid));
-		}
+		remove_context(CUR_XG(cid));
 	}
 }
 
