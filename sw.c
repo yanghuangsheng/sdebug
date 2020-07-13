@@ -58,7 +58,7 @@ sw_zend_xdebug_globals *get_current_context()
 {
     zval *val = zend_hash_index_find(&sw_xdebug_globals, get_cid());
 
-    return (sw_zend_xdebug_globals *)Z_PTR_P(val);
+    return val ? (sw_zend_xdebug_globals *) Z_PTR_P(val) : NULL;
 }
 
 void remove_context(long cid)

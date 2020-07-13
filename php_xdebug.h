@@ -279,6 +279,7 @@ sw_zend_xdebug_globals *get_current_context(void);
 void remove_context(long cid);
 
 #define GET_CUR_XG sw_zend_xdebug_globals *current_xdebug_globals = get_current_context();
+#define HAS_CONTEXT current_xdebug_globals != NULL
 #define CUR_XG(v) (current_xdebug_globals->v)
 
 #ifdef ZTS
