@@ -1,11 +1,12 @@
 Sdebug 
-------------
-* Sdebug is a fork of the Offical [Xdebug](https://github.com/xdebug/xdebug) to compilant with Swoole.
-* Based on xdebug2.7(https://github.com/xdebug/xdebug)
+=======
+
+Sdebug is a fork of the Offical `Xdebug
+<https://github.com/xdebug/xdebug>`_ to compilant with Swoole.
 
 Notice
 ------------
-* The name of the extension is `sdebug` instead of `xdebug`, if you want to use `Phpunit CodeCoverage`, you have to manually modify `xdebug` to be `sdebug`.
+* The name of the extension is `sdebug` instead of ``xdebug``, if you want to use ``Phpunit CodeCoverage``, you have to manually modify ``xdebug`` to be ``sdebug``.
 
 Install and setup
 -----
