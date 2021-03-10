@@ -1,8 +1,9 @@
 Sdebug 
 =======
 
-Sdebug is a fork of the Offical `Xdebug
-<https://github.com/xdebug/xdebug>`_ to compilant with Swoole.
+This project is archieved, please check `Yasd <https://github.com/swoole/yasd>`
+
+Sdebug is a fork of the Offical `Xdebug` to compilant with Swoole.
 
 Notice
 ------------
