@@ -1,35 +1,24 @@
-Xdebug
-======
+Sdebug 
+=======
 
-.. image:: https://travis-ci.org/xdebug/xdebug.svg?branch=master
-.. image:: https://ci.appveyor.com/api/projects/status/glp9xfsmt1p25nkn?svg=true
-.. image:: https://circleci.com/gh/xdebug/xdebug/tree/master.svg?style=svg
+This project is archieved, please check `Yasd <https://github.com/swoole/yasd>`
 
-These are instructions for installing Xdebug from a Git checkout. Please refer
-to https://xdebug.org/support.php for support.
+Sdebug is a fork of the Offical `Xdebug` to compilant with Swoole.
 
-Introduction
+Notice
 ------------
+* The name of the extension is `sdebug` instead of ``xdebug``, if you want to use ``Phpunit CodeCoverage``, you have to manually modify ``xdebug`` to be ``sdebug``.
 
-You need to compile Xdebug separately from the rest of PHP. You need to have
-access to the scripts ``phpize`` and ``php-config``.  If your system does not
-have ``phpize`` and ``php-config``, you will need to compile and install PHP
-from a source tarball first, or install a ``php-dev`` package if your
-distribution provides one. These scripts are by-products of the PHP
-compilation and installation processes and are needed to compile external
-extensions. It is important that the source version matches the installed
-version as there are slight, but important, differences between PHP versions. 
-
-Clone
+Install and setup
 -----
 
-You can clone the Xdebug source directory with::
+You can clone the Sdebug source directory with::
 
-   git clone https://github.com/xdebug/xdebug.git
+   git clone https://github.com/swoole/sdebug.git
 
 Then move into this new directory::
 
-	cd xdebug
+	cd sdebug
 
 Although it is recommended to run the latest version from the **master**
 branch, older versions are available through tags. For example to checkout the
@@ -78,23 +67,4 @@ The long winded way of installation is:
 	PHP 7.2.0RC6 (cli) (built: Nov 23 2017 10:30:56) ( NTS DEBUG )
 	Copyright (c) 1997-2017 The PHP Group
 	Zend Engine v3.2.0-dev, Copyright (c) 1998-2017 Zend Technologies
-		with Xdebug v2.6.0-dev, Copyright (c) 2002-2017, by Derick Rethans
-
-Support
--------
-
-For questions regarding compile issues, please write to the **xdebug-general**
-email list which you can find at https://xdebug.org/support.php#list
-
-You can also find support on IRC: ``freenode/#xdebug``. You can do that with
-your favourite client, or by using their webchat_.
-
-.. _webchat: http://webchat.freenode.net/?channels=#xdebug
-
-If you think that you encountered a bug, please file a detailed bug report
-at https://bugs.xdebug.org. You are required to create an account, this is
-so that you can be contacted for additional information and to keep out
-spam.
-
-
-Derick Rethans — derick@xdebug.org
+      with Sdebug v2.x.x-dev, Copyright (c) 2002-2017, by Derick Rethans

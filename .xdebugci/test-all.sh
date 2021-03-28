@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PATTERN=${1:-'^7.3.*'}
+PATTERN=${1:-'^7.[34].*'}
 
 PHP=`which php`
 if [[ "${PHP}" == "" ]]; then
@@ -22,6 +22,9 @@ rm -rf /tmp/ptester/logs/*
 mkdir -p /tmp/ptester/junit
 rm -rf /tmp/ptester/junit/*
 
+# Storing Run ID
+date +'%Y-%d-%d-%H-%M-%S' > /tmp/ptester/run-id.txt
+
 c=0
 for i in $PHPS; do
 	v=`echo $i | sed 's@.*/@@'`
@@ -41,7 +44,7 @@ for i in `seq 0 $MAX`; do
 	GroupName=`printf group%03d.lst $i`
 
 	if [ -s /tmp/ptester/$GroupName ]; then
-		${MYDIR}/test-thread.sh $i `cat /tmp/ptester/$GroupName` &
+		PHP_DIR=${PHP_DIR} ${MYDIR}/test-thread.sh $i `cat /tmp/ptester/$GroupName` &
 	fi
 done
 
